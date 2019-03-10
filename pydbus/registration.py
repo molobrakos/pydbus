@@ -84,7 +84,6 @@ class ObjectWrapper(ExitableWithAliases("unwrap")):
 
 			if unixfd.is_supported(connection):
 				parameters = unixfd.extract(
-					connection,
 					parameters,
 					inargs,
 					invocation.get_message().get_unix_fd_list())
@@ -97,7 +96,7 @@ class ObjectWrapper(ExitableWithAliases("unwrap")):
 				if len(outargs) == 1:
 					result = (result, )
 				if unixfd.is_supported(connection):
-					invocation.return_value_with_unix_fd_list(GLib.Variant("(" + "".join(outargs) + ")", result), unixfd.make_fd_list(connection, result, outargs))
+					invocation.return_value_with_unix_fd_list(GLib.Variant("(" + "".join(outargs) + ")", result), unixfd.make_fd_list(result, outargs))
 				else:
 					invocation.return_value(GLib.Variant("(" + "".join(outargs) + ")", result))
 

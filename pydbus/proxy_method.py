@@ -72,49 +72,45 @@ class ProxyMethod(object):
 		callback = kwargs.get("callback", None)
 		callback_args = kwargs.get("callback_args", tuple())
 
-		call_args = (
-			instance._bus_name,
-			instance._path,
-			self._iface_name,
-			self.__name__,
-			GLib.Variant(self._sinargs, args),
-			GLib.VariantType.new(self._soutargs),
-			0,
-			timeout_to_glib(timeout),
-			None
+		call_args = dict(
+			bus_name=instance._bus_name,
+			object_path=instance._path,
+			interface_name=self._iface_name,
+			method_name=self.__name__,
+			parameters=GLib.Variant(self._sinargs, args),
+			reply_type=GLib.VariantType.new(self._soutargs),
+			flags=0,
+			timeout_msec=timeout_to_glib(timeout),
+			cancellable=None
 		)
 
 		if callback:
-			call_args += (self._finish_async_call, (callback, callback_args))
-			instance._bus.con.call(*call_args)
-			return None
-		else:
-			ret = instance._bus.con.call_sync(*call_args)
-			return self._unpack_return(ret)
-
+			call_args.update(callback=self._finish_async_call,
+					 user_data=(callback, callback_args))
 
 		if unixfd.is_supported(instance._bus.con):
-			fd_list = unixfd.make_fd_list(
-				instance._bus.con,
+			call_args.update(fd_list=unixfd.make_fd_list(
 				args,
-				[arg[1] for arg in self._inargs])
-			ret, fd_list = instance._bus.con.call_with_unix_fd_list_sync(
-				instance._bus_name, instance._path,
-				self._iface_name, self.__name__, GLib.Variant(self._sinargs, args), GLib.VariantType.new(self._soutargs),
-				0, timeout_to_glib(timeout), fd_list, None)
-			ret = unixfd.extract(
-				instance._bus.con,
-				ret.unpack(),
-				self._outargs,
-				fd_list)
+				[arg[1] for arg in self._inargs]))
+			if callback:
+				instance._bus.con.call_with_unix_fd_list(**call_args)
+				return None
+			else:
+				ret, fd_list = instance._bus.con.call_with_unix_fd_list_sync(**call_args)
+				return self._unpack_return(ret, fd_list)
 		else:
-			ret = instance._bus.con.call_sync(
-				instance._bus_name, instance._path,
-				self._iface_name, self.__name__, GLib.Variant(self._sinargs, args), GLib.VariantType.new(self._soutargs),
-				0, timeout_to_glib(timeout), None)
+			if callback:
+				instance._bus.con.call(**call_args)
+				return None
+			else:
+			        ret = instance._bus.con.call_sync(**call_args)
+			        return self._unpack_return(ret)
 
-	def _unpack_return(self, values):
-		ret = values.unpack()
+	def _unpack_return(self, values, fd_list=None):
+		ret = unixfd.extract(
+			values.unpack(),
+			self._outargs,
+			fd_list)
 		if len(self._outargs) == 0:
 			return None
 		elif len(self._outargs) == 1:
@@ -125,7 +121,6 @@ class ProxyMethod(object):
 	def _finish_async_call(self, source, result, user_data):
 		error = None
 		return_args = None
-
 		try:
 			ret = source.call_finish(result)
 			return_args = self._unpack_return(ret)

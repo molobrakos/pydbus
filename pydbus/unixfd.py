@@ -10,14 +10,12 @@ def is_supported(conn):
 	return conn.get_capabilities() & Gio.DBusCapabilityFlags.UNIX_FD_PASSING
 
 
-def extract(conn, params, signature, fd_list):
+def extract(params, signature, fd_list):
 	"""
 	Extract any file descriptors from a UnixFDList (e.g. after
 	receiving from D-Bus) to a parameter list.
 	Receiver must call os.dup on any fd it decides to keep/use.
 	"""
-	if not is_supported(conn):
-		return params
 	if not fd_list:
 		return params
 	fd_list = (fd
@@ -30,13 +28,11 @@ def extract(conn, params, signature, fd_list):
 		in zip(params, signature)]
 
 
-def make_fd_list(conn, params, signature):
+def make_fd_list(params, signature):
 	"""
 	Embed any unix file descriptors in a parameter list into a
 	UnixFDList (for D-Bus-dispatch).
 	"""
-	if not is_supported(conn):
-		return None
 	if not any(arg
 		   for arg in signature
 		   if arg == TYPE_FD):
