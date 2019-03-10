@@ -72,7 +72,6 @@ class ProxyMethod(object):
 
 		if unixfd.is_supported(instance._bus.con):
 			fd_list = unixfd.make_fd_list(
-				instance._bus.con,
 				args,
 				[arg[1] for arg in self._inargs])
 			ret, fd_list = instance._bus.con.call_with_unix_fd_list_sync(
@@ -80,7 +79,6 @@ class ProxyMethod(object):
 				self._iface_name, self.__name__, GLib.Variant(self._sinargs, args), GLib.VariantType.new(self._soutargs),
 				0, timeout_to_glib(timeout), fd_list, None)
 			ret = unixfd.extract(
-				instance._bus.con,
 				ret.unpack(),
 				self._outargs,
 				fd_list)
