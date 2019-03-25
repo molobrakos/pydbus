@@ -96,7 +96,7 @@ class ObjectWrapper(ExitableWithAliases("unwrap")):
 				if len(outargs) == 1:
 					result = (result, )
 				if unixfd.is_supported(connection):
-					invocation.return_value_with_unix_fd_list(GLib.Variant("(" + "".join(outargs) + ")", result), unixfd.make_fd_list(result, outargs))
+					invocation.return_value_with_unix_fd_list(GLib.Variant("(" + "".join(outargs) + ")", result), unixfd.make_fd_list(result, outargs, steal=True))
 				else:
 					invocation.return_value(GLib.Variant("(" + "".join(outargs) + ")", result))
 
