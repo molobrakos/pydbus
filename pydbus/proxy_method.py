@@ -103,8 +103,8 @@ class ProxyMethod(object):
 				instance._bus.con.call(**call_args)
 				return None
 			else:
-			        ret = instance._bus.con.call_sync(**call_args)
-			        return self._unpack_return(ret)
+                                ret = instance._bus.con.call_sync(**call_args)
+                                return self._unpack_return(ret)
 
 	def _unpack_return(self, values, fd_list=None):
 		ret = unixfd.extract(
