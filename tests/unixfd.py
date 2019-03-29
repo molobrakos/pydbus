@@ -3,10 +3,12 @@ from gi.repository import GLib
 from threading import Thread
 import sys
 import os
-import pathlib
 
 loop = GLib.MainLoop()
-contents = pathlib.Path(__file__).read_text()
+
+
+with open(__file__) as f:
+	contents = f.read()
 
 
 class TestObject(object):
@@ -21,7 +23,7 @@ class TestObject(object):
 	</node>
 	"""
 	def Hello(self, in_fd):
-		with open(in_fd) as in_file:
+		with os.fdopen(in_fd) as in_file:
 			in_file.seek(0)
 			assert(contents == in_file.read())
 			print("Received fd as in parameter ok")
@@ -39,7 +41,7 @@ with bus.publish("baz.bar.Foo", TestObject()):
 		with open(__file__) as in_file:
 			assert(contents == in_file.read())
 			out_fd = remote.Hello(in_file.fileno())
-			with open(out_fd) as out_file:
+			with os.fdopen(out_fd) as out_file:
 				out_file.seek(0)
 				assert(contents == out_file.read())
 				print("Received fd as out argument ok")

@@ -65,12 +65,15 @@ class ObjectWrapper(ExitableWithAliases("unwrap")):
 					if method_name == "Get":
 						method = self.Get
 						outargs = ["v"]
+						inargs = ["ss"]
 					elif method_name == "GetAll":
 						method = self.GetAll
 						outargs = ["a{sv}"]
+						inargs = ["s"]
 					elif method_name == "Set":
 						method = self.Set
 						outargs = []
+						inargs = ["ssv"]
 					else:
 						raise
 				else:

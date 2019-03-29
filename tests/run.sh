@@ -16,4 +16,5 @@ then
 	"$PYTHON" $TESTS_DIR/publish_properties.py
 	"$PYTHON" $TESTS_DIR/publish_multiface.py
 	"$PYTHON" $TESTS_DIR/publish_async.py
+	"$PYTHON" $TESTS_DIR/unixfd.py
 fi
