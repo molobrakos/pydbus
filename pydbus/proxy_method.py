@@ -69,7 +69,6 @@ class ProxyMethod(object):
 			if kwarg not in ("timeout", "callback", "callback_args"):
 				raise TypeError(self.__qualname__ + " got an unexpected keyword argument '{}'".format(kwarg))
 		timeout = kwargs.get("timeout", None)
-
 		callback = kwargs.get("callback", None)
 		callback_args = kwargs.get("callback_args", tuple())
 
@@ -112,7 +111,6 @@ class ProxyMethod(object):
 			values.unpack(),
 			self._outargs,
 			fd_list)
-
 		if len(self._outargs) == 0:
 			return None
 		elif len(self._outargs) == 1:
